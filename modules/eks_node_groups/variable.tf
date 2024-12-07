@@ -33,7 +33,7 @@ variable "node_groups" {
 variable "environment" {
   type = string
 }
-
-variable "arn" {
-  type = string  
+variable "node_role_arn" {
+  description = "ARN of the IAM role for the EKS node group"
+  type        = string
 }

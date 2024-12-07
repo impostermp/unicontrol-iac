@@ -6,7 +6,7 @@ provider "aws" {
 terraform {
   backend "s3" {
     bucket         = "shared-tf-state-bucket"
-    key            = "shared-vpc/terraform.tfstate"
+    key            = "shared/terraform.tfstate"
     region         = "eu-central-1"
     encrypt        = true
   }

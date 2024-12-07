@@ -5,10 +5,10 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    bucket         = "tf-state-bucket"
+    bucket         = "tf-state-bucket-alpha"
     key            = "alpha/terraform.tfstate"
     region         = "eu-central-1"
-    dynamodb_table = "terraform-lock-table"
+    dynamodb_table = "terraform-lock-table-alpha" # ensures state locking
     encrypt        = true
   }
 }

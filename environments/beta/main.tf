@@ -2,15 +2,20 @@ provider "aws" {
   region = var.region
 }
 
-module "shared_vpc" {
-  source         = "../../modules/shared-vpc"
-  vpc_cidr = "10.0.0.0/16"
+data "terraform_remote_state" "shared" {
+  backend = "s3"
+  config = {
+    bucket         = "beta-state-tf"
+    key            = "beta/terraform.tfstate"
+    region         = "eu-central-1"
+    dynamodb_table = "terraform-lock-table-beta"
+  }
 }
 
 module "eks" {
   source       = "../../modules/compute/eks"
   cluster_name = "shared-eks-cluster"
-  subnet_ids = concat(module.shared_vpc.private_subnet_ids, module.shared_vpc.public_subnet_ids)
+  subnet_ids = data.terraform_remote_state.shared.outputs.subnet_ids
 
   node_groups = {
     beta-1 = {

@@ -2,22 +2,30 @@ provider "aws" {
   region = var.region
 }
 
-module "shared_vpc" {
-  source     = "../../modules/shared-vpc"
-  vpc_cidr = "10.0.0.0/16"
+data "terraform_remote_state" "shared" {
+  backend = "s3"
+  config = {
+    bucket         = "prod-state-tf"
+    key            = "prod/terraform.tfstate"
+    region         = "eu-central-1"
+    dynamodb_table = "terraform-lock-table-prod"
+  }
 }
 
-module "eks" {
-  source       = "../../modules/compute/eks"
-  cluster_name = "shared-eks-cluster"
-  subnet_ids   = module.shared_vpc.subnet_ids
+module "eks_node_groups" {
+  source        = "../../modules/eks_node_groups"
+  cluster_name  = data.terraform_remote_state.shared.outputs.eks_cluster_name
+  subnet_ids    = data.terraform_remote_state.shared.outputs.private_subnet_ids
+  environment   = var.environment
+
+  node_role_arn = data.terraform_remote_state.shared.outputs.eks_cluster_role_arn
 
   node_groups = {
-    prod-1 = {
-      instance_type = "t3.large"
-      desired_size  = 4
-      max_size      = 6
-      min_size      = 3
+    "unicontrol-${var.environment}-0" = {
+      instance_type = "t3.medium"
+      desired_size  = 2
+      max_size      = 2
+      min_size      = 2
     }
   }
 }
